@@ -23,7 +23,7 @@ function onEachFeature (feature, layer) {
 		for (var property in feature.properties) {
 			popupContent += "<p>" + property + ":" + feature.properties[property] + "</p>";
 		}
-		//the content will be displayed as a popup
+		//The content will be displayed as a popup
 		layer.bindPopup(popupContent);
 	};
 };
