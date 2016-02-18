@@ -1,4 +1,35 @@
 /*The Map CSS*/
 
 /*defined height for map container*/
-#map {height: 900px;}
+#map {
+	height: 400px;
+	width: 80%;
+	display: inline-block;
+}
+
+/*working wiht popup content*/
+.leaflet-popup-content p {
+	margin: 0.2em 0;
+}
+
+#panel {
+	width: 15%;
+	padding: 20px;
+	display: inline-block;
+	vertical-align: top;
+	text-align: center;
+	line-height: 42px;
+}
+
+.range-slider {
+	width: 50%;
+}
+
+#forward {
+	float: right;
+}
+
+#reverse {
+	float: left;
+}
+
