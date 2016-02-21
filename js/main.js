@@ -39,33 +39,25 @@ function createMap() {
 	getData(map);
 };
 
-//Step 2. Add data
-//creating a function to load in data from MegaCities.geojson using jquery ajax method
-function getData(map) {
-	$.ajax("data/575Lab1Data.geojson", {
-		dataType: "json",
-		success: function (response) {
-			//call function to create proportional symbols
-			createPropSymbols(response, map);
-			createSequenceControls(map);
-		}		
-	});
-};
-
 //Step 3. Make circle markers
-function createPropSymbols(data, map) {
+function createPropSymbols(data, map, attributes) {
 	//geoJSON layer with leaflet is created and added to the map
 	L.geoJson(data, {
 		//pointToLayer is used to change the marker features to circle markers, 
 		//styled with geojsonMarkerOptions
-			pointToLayer: pointToLayer
+		pointToLayer: function(feature, latlng){
+			return pointToLayer(feature, latlng, attributes);
+		}
 	}).addTo(map);
 };
 
 //function to convert markers to circle markers
-function pointToLayer (feature, latlng) {
-//Step 4. Choose attribute to visualize
-	var attribute = "12to3am";
+function pointToLayer (feature, latlng, attributes) {
+	//D. Assign attribute based on index
+	//Step 4. Choose attribute to visualize
+	var attribute = attributes[0];
+	//check
+	//console.log(attribute);
 	//marker style options are set to a variable
 	var geojsonMarkerOptions = {
 		radius: 8,
@@ -129,9 +121,36 @@ function calcPropSymbolRadius(attValue) {
 	return radius;
 };
 
+//J. Resize prop symbols accordingly
+function updatePropSymbols(map, attribute) {
+	map.eachLayer(function(layer) {
+		if (layer.feature && layer.feature.properties[attribute]) {
+			//access feature properties;
+			var props = layer.feature.properties;
+
+			//update each feature's radius based on new attribute values
+			var radius = calcPropSymbolRadius(props[attribute]);
+			layer.setRadius(radius);
+
+			//add Weather Station name to popup content string
+			var popupContent = "<p><b>Weather Station:</b>" + props.stationName + "</p>";
+
+			//add formatted attribute to panel content string
+			var year = attribute.split("_")[0];
+			panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " inches</p>";
+
+			//replace the layer popup
+			layer.bindPopup(popupContent, {
+				offset: new L.Point (0, -radius)
+			});
+		};
+	});
+};
+//**ON EXAMPLE 3.17**//
+
 //Sequencing Controls
 //A. Create slider widget
-function createSequenceControls(map){
+function createSequenceControls(map, attributes){
 	//create range inpute element (slider)
 	$('#panel').append('<input class = "range-slider" type = "range">');
 
@@ -149,12 +168,81 @@ function createSequenceControls(map){
     $('#panel').append('<button class="skip" id="forward">Skip</button>');
 	$('#reverse').html('<img src = "img/reverse_icon.png">');
 	$('#forward').html('<img src = "img/forward_icon.png">');
+
+	//E. Listen for user input through affordances (click)
+	$('.skip').click(function() {
+		//get the old index value
+		var index = $('.range-slider').val();
+
+		//F. Forward step incriment index, reverse decrement
+		if ($(this).attr('id') == 'forward') {
+			index++;
+			//G. Wrap end around
+			index = index > 7 ? 0 : index;
+		} else if ($(this).attr('id') == 'reverse'){
+			index--;
+			//G. Wrap end around
+			index = index < 0 ? 7 : index;
+		};
+	
+		//H. Update slider position based on index position
+		$('.range-slider').val(index);
+
+		//I. Reassign values based on inidex
+		updatePropSymbols(map, attributes[index]);
+
+	});
+
+	//E. Listen for user input through affordances (slider)
+	$('.range-slider').on('input', function() {
+		//F. get new index value
+		var index = $(this).val();
+		//test
+		//console.log(index);
+
+		//I. Reassign values based on inidex
+		updatePropSymbols(map, attributes[index]);
+
+	});	
 };
 
-//***ON LESS 3.3 CHANGING ATTRIBUTES***//
+//C. Create an array of time data to keep track of the order
+function processData(data) {
+	//empty array to hold attributes
+	var attributes = []
 
+	//properties of the first feature in the dataset
+	var properties = data.features[0].properties;
 
+	//push each attribute name into attributes array
+	for (var attribute in properties) {
+		//only talke attributes with rainfall values
+		if (attribute.indexOf('to') > -1) {
+			attributes.push(attribute);
+		};
+	};
 
+	//check result
+	//console.log(attributes);
+
+	return attributes;
+};
+
+//Step 2. Add data
+//creating a function to load in data from MegaCities.geojson using jquery ajax method
+function getData(map) {
+	$.ajax("data/575Lab1Data.geojson", {
+		dataType: "json",
+		success: function (response) {
+			//create an attributes array
+			var attributes = processData(response);
+
+			//call function to create proportional symbols
+			createPropSymbols(response, map, attributes);
+			createSequenceControls(map, attributes);
+		}		
+	});
+};
 
 //when the DOM is ready, createMap is called 
 $(document).ready(createMap);
