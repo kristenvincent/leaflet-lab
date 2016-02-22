@@ -27,7 +27,7 @@
 //defining a function to create the map
 function createMap() {
 //creating a variable called map that initializes our map, with zoom level and map center set
-	var map = L.map('map').setView([30, -88], 7);
+	var map = L.map('map').setView([30, -88], 5);
 	
 	//Here, the tile layer (base map) is set and added to the map
 	L.tileLayer('http://b.tiles.mapbox.com/v4/nps.68926899,nps.502a840b/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibnBzIiwiYSI6IkdfeS1OY1UifQ.K8Qn5ojTw4RV1GwBlsci-Q', {
@@ -102,7 +102,7 @@ function pointToLayer (feature, latlng, attributes) {
 			this.closePopup();
 		},
 		click: function(){
-			$("#panel").html(panelContent);
+			$("#panelText").html(panelContent);
 		}
 	});
 
@@ -124,7 +124,8 @@ function calcPropSymbolRadius(attValue) {
 //J. Resize prop symbols accordingly
 function updatePropSymbols(map, attribute) {
 	map.eachLayer(function(layer) {
-		if (layer.feature && layer.feature.properties[attribute]) {
+		if (layer.feature && (layer.feature.properties[attribute] >= 0)) {
+			//console.log(layer.feature);
 			//access feature properties;
 			var props = layer.feature.properties;
 
@@ -135,10 +136,13 @@ function updatePropSymbols(map, attribute) {
 			//add Weather Station name to popup content string
 			var popupContent = "<p><b>Weather Station:</b>" + props.stationName + "</p>";
 
-			//add formatted attribute to panel content string
-			var year = attribute.split("_")[0];
-			panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " inches</p>";
+			//build popup content string
+			//var panelContent = "<p><b>Weather Station:</b>" + props.stationName + "</p>";
 
+			//add formatted attribute to panel content string
+			var timeStamp = attribute.split("_")[0];;
+			var panelContent = "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " inches</p>";
+			
 			//replace the layer popup
 			layer.bindPopup(popupContent, {
 				offset: new L.Point (0, -radius)
@@ -146,13 +150,13 @@ function updatePropSymbols(map, attribute) {
 		};
 	});
 };
-//**ON EXAMPLE 3.17**//
+
 
 //Sequencing Controls
 //A. Create slider widget
 function createSequenceControls(map, attributes){
 	//create range inpute element (slider)
-	$('#panel').append('<input class = "range-slider" type = "range">');
+	$('#panelSequence').append('<input class = "range-slider" type = "range">');
 
 	//set slider attributes
 	$('.range-slider').attr({
@@ -164,8 +168,8 @@ function createSequenceControls(map, attributes){
 	});
 
 	//add skip buttons
-	$('#panel').append('<button class="skip" id="reverse">Reverse</button>');
-    $('#panel').append('<button class="skip" id="forward">Skip</button>');
+	$('#panelSequence').append('<button class="skip" id="reverse">Reverse</button>');
+    $('#panelSequence').append('<button class="skip" id="forward">Skip</button>');
 	$('#reverse').html('<img src = "img/reverse_icon.png">');
 	$('#forward').html('<img src = "img/forward_icon.png">');
 
@@ -188,7 +192,7 @@ function createSequenceControls(map, attributes){
 		//H. Update slider position based on index position
 		$('.range-slider').val(index);
 
-		//I. Reassign values based on inidex
+		//I. Reassign values based on index
 		updatePropSymbols(map, attributes[index]);
 
 	});
@@ -217,6 +221,8 @@ function processData(data) {
 	//push each attribute name into attributes array
 	for (var attribute in properties) {
 		//only talke attributes with rainfall values
+		//console.log(attribute);
+		//wat
 		if (attribute.indexOf('to') > -1) {
 			attributes.push(attribute);
 		};
