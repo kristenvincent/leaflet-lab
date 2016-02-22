@@ -124,6 +124,8 @@ function calcPropSymbolRadius(attValue) {
 //J. Resize prop symbols accordingly
 function updatePropSymbols(map, attribute) {
 	map.eachLayer(function(layer) {
+		//Since there are 0's in the data, they may be considered undefined,
+		//so the if statement won't run, so add >= 0 to include 0 data!
 		if (layer.feature && (layer.feature.properties[attribute] >= 0)) {
 			//console.log(layer.feature);
 			//access feature properties;
