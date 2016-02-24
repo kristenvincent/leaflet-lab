@@ -212,6 +212,12 @@ function createSequenceControls(map, attributes){
 	});	
 };
 
+
+//fifth operator-overlay 
+
+
+
+
 //C. Create an array of time data to keep track of the order
 function processData(data) {
 	//empty array to hold attributes
