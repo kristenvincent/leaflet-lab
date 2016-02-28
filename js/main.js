@@ -31,7 +31,7 @@ function createMap() {
 	
 	//Here, the tile layer (base map) is set and added to the map
 	L.tileLayer('http://b.tiles.mapbox.com/v4/nps.68926899,nps.502a840b/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibnBzIiwiYSI6IkdfeS1OY1UifQ.K8Qn5ojTw4RV1GwBlsci-Q', {
-		maxZoom: 14,
+		maxZoom: 12,
 		attribution: 'Imagery from <a href="http://www.nps.gov/npmap/tools/park-tiles">National Park Service Park Tiles</a><a href="http://www.nps.gov</a>'
 	}).addTo(map);
 
@@ -77,7 +77,7 @@ function pointToLayer (feature, latlng, attributes) {
 	var layer = L.circleMarker(latlng, geojsonMarkerOptions);
 
 	//build popup content string
-	var panelContent = "<p><b>Weather Station:</b>" + feature.properties.stationName + "</p>";
+	var panelContent = "<p><b>Weather Station: </b>" + feature.properties.stationName + "</p>";
 	
 	//formatting the panel information
 	var timeStamp = attribute.split("_")[0];
@@ -131,24 +131,42 @@ function updatePropSymbols(map, attribute) {
 			//access feature properties;
 			var props = layer.feature.properties;
 
+
 			//update each feature's radius based on new attribute values
 			var radius = calcPropSymbolRadius(props[attribute]);
 			layer.setRadius(radius);
 
 			//add Weather Station name to popup content string
-			var popupContent = "<p><b>Weather Station:</b>" + props.stationName + "</p>";
+			var popupContent = "<p><b>Weather Station: </b>" + props.stationName + "</p>";
 
 			//build popup content string
-			//var panelContent = "<p><b>Weather Station:</b>" + props.stationName + "</p>";
-
-			//add formatted attribute to panel content string
-			var timeStamp = attribute.split("_")[0];;
-			var panelContent = "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " inches</p>";
+			var panelContent = "<p><b>Weather Station: </b>" + props.stationName + "</p>";
 			
+			//add formatted attribute to panel content string
+			var timeStamp = attribute.split("_")[0];
+			//console.log(timeStamp);
+			panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " inches</p>";
+			console.log(panelContent);
+
 			//replace the layer popup
 			layer.bindPopup(popupContent, {
 				offset: new L.Point (0, -radius)
 			});
+
+			//add event listeners to open popups
+			layer.on({
+				mouseover: function(){
+					this.openPopup();
+				},
+				mouseout: function(){
+					this.closePopup;
+				},
+				click: function(){
+					$("#panelContent").html(panelContent);
+				}
+			});
+			return layer;
+
 		};
 	});
 };
