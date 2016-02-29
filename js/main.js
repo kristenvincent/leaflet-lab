@@ -27,7 +27,11 @@
 //defining a function to create the map
 function createMap() {
 //creating a variable called map that initializes our map, with zoom level and map center set
-	var map = L.map('map').setView([30, -88], 5);
+	var map = L.map('map', {
+		center: [30, -88],
+		zoom: 5,
+		minZoom: 4
+	});
 	
 	//Here, the tile layer (base map) is set and added to the map
 	L.tileLayer('http://b.tiles.mapbox.com/v4/nps.68926899,nps.502a840b/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibnBzIiwiYSI6IkdfeS1OY1UifQ.K8Qn5ojTw4RV1GwBlsci-Q', {
@@ -49,6 +53,7 @@ function createPropSymbols(data, map, attributes) {
 			return pointToLayer(feature, latlng, attributes);
 		}
 	}).addTo(map);
+	updatePropSymbols(map, attributes[0]);
 };
 
 //function to convert markers to circle markers
@@ -76,35 +81,35 @@ function pointToLayer (feature, latlng, attributes) {
 	//creating the circle marker layer
 	var layer = L.circleMarker(latlng, geojsonMarkerOptions);
 
-	//build popup content string
-	var panelContent = "<p><b>Weather Station: </b>" + feature.properties.stationName + "</p>";
+	// //build popup content string
+	// var panelContent = "<p><b>Weather Station: </b>" + feature.properties.stationName + "</p>";
 	
-	//formatting the panel information
-	var timeStamp = attribute.split("_")[0];
+	// //formatting the panel information
+	// var timeStamp = attribute;
 	
-	panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + feature.properties[attribute] + " inches</p>";
+	// panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + feature.properties[attribute] + " inches</p>";
 
-	//popup content is now weather station name
-	var popupContent = feature.properties.stationName;
+	// //popup content is now weather station name
+	// var popupContent = feature.properties.stationName;
 
-	//bind the popup to the marker
-	layer.bindPopup(popupContent, {
-		offset: new L.Point(0, -geojsonMarkerOptions.radius),
-		closeButton: false
-	});
+	// //bind the popup to the marker
+	// layer.bindPopup(popupContent, {
+	// 	offset: new L.Point(0, -geojsonMarkerOptions.radius),
+	// 	closeButton: false
+	// });
 
 	//add event listeners to add content to an information panel
-	layer.on({
-		mouseover: function(){
-			this.openPopup();
-		},
-		mouseout: function(){
-			this.closePopup();
-		},
-		click: function(){
-			$("#panelText").html(panelContent);
-		}
-	});
+	// layer.on({
+	// 	mouseover: function(){
+	// 		this.openPopup();
+	// 	},
+	// 	mouseout: function(){
+	// 		this.closePopup();
+	// 	},
+	// 	click: function(){
+	// 		$("#panelText").html(panelContent);
+	// 	}
+	// });
 
 	//return the marker to the L.geoJson pointToLayer option
 	return layer;
@@ -138,20 +143,28 @@ function updatePropSymbols(map, attribute) {
 
 			//add Weather Station name to popup content string
 			var popupContent = "<p><b>Weather Station: </b>" + props.stationName + "</p>";
+			var timeStamp = attribute;
 
 			//build popup content string
-			var panelContent = "<p><b>Weather Station: </b>" + props.stationName + "</p>";
+			var panelContent = "<p><b>Weather Station: </b><span class = 'weatherStation'>" + props.stationName + "</span></p>";
+			//console.log(props.stationName);
 			
 			//add formatted attribute to panel content string
-			var timeStamp = attribute.split("_")[0];
-			//console.log(timeStamp);
+			
 			panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " inches</p>";
-			console.log(panelContent);
+			//console.log(panelContent);
+	
 
 			//replace the layer popup
 			layer.bindPopup(popupContent, {
-				offset: new L.Point (0, -radius)
+				offset: new L.Point (0, -radius),
+				closeButton: false
 			});
+
+			if (props.stationName == $(".weatherStation").html()){
+
+				$("#panelText").html(panelContent);
+			};
 
 			//add event listeners to open popups
 			layer.on({
@@ -162,7 +175,7 @@ function updatePropSymbols(map, attribute) {
 					this.closePopup;
 				},
 				click: function(){
-					$("#panelContent").html(panelContent);
+					$("#panelText").html(panelContent);
 				}
 			});
 			return layer;
@@ -232,6 +245,15 @@ function createSequenceControls(map, attributes){
 
 
 //fifth operator-overlay 
+// function rainfallOverlay(overlay) {
+// 	var overlayData = 
+
+// 	var maxRainfall = {
+// 		"Maximum Rainfall": 
+// 	};
+
+// 	L.control.layers(null, null).addTo(map);
+// };
 
 
 
@@ -269,7 +291,7 @@ function getData(map) {
 			//create an attributes array
 			var attributes = processData(response);
 
-			//call function to create proportional symbols
+			//call function that use the data
 			createPropSymbols(response, map, attributes);
 			createSequenceControls(map, attributes);
 		}		

@@ -2,9 +2,10 @@
 
 /*defined height for map container*/
 #map {
-	height: 500px;
+	height: 750px;
 	width: 50%;
 	display: inline-block;
+	margin-top: 10px;
 }
 
 /*working wiht popup content*/
@@ -33,3 +34,10 @@
 	float: left;
 }
 
+.header {
+	color: white;
+	background-color: black;
+	padding: 1px;
+
+	
+}
