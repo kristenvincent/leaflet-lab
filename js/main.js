@@ -41,6 +41,7 @@ function createMap() {
 
 	//getData function is called to get the data for the map element
 	getData(map);
+	getOverlayData(map);
 };
 
 //Step 3. Make circle markers
@@ -54,6 +55,17 @@ function createPropSymbols(data, map, attributes) {
 		}
 	}).addTo(map);
 	updatePropSymbols(map, attributes[0]);
+
+	//create max rainfall rings
+	maxRing = L.geoJson(data, {
+		//create the circle marker
+		pointToLayer: function(feature, latlng){
+			return L.circleMarker(latlng, {
+				fillOpacity: 0,
+				fillColor: "#27AAC9"
+			}).addTo(map);
+		}
+	});
 };
 
 //function to convert markers to circle markers
@@ -255,6 +267,19 @@ function createSequenceControls(map, attributes){
 // 	L.control.layers(null, null).addTo(map);
 // };
 
+function createOverlaySymbols(data, map, attributes) {
+	//geoJSON layer with leaflet is created and added to the map
+	L.geoJson(data, {
+		//pointToLayer is used to change the marker features to circle markers, 
+		//styled with geojsonMarkerOptions
+		pointToLayer: function(feature, latlng){
+			return pointToLayer(feature, latlng, attributes);
+		}
+	}).addTo(map);
+	updatePropSymbols(map, attributes[0]);
+};
+
+
 
 
 
@@ -297,6 +322,20 @@ function getData(map) {
 		}		
 	});
 };
+
+function getOverlayData(map) {
+	$.ajax("data/overlayData.geojson", {
+		dataType: "json",
+		success: function (response) {
+			//create an attributes array
+			var operator = processData(response);
+
+			//call function that use the data
+			//rainfallOverlay(overlay);
+		}		
+	});
+};
+
 
 //when the DOM is ready, createMap is called 
 $(document).ready(createMap);
