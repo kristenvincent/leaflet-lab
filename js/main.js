@@ -25,6 +25,7 @@
 
 //Step 1. Create the Leaflet map
 //defining a function to create the map
+
 function createMap() {
 //creating a variable called map that initializes our map, with zoom level and map center set
 	var map = L.map('map', {
@@ -34,7 +35,7 @@ function createMap() {
 	});
 	
 	//Here, the tile layer (base map) is set and added to the map
-	L.tileLayer('http://b.tiles.mapbox.com/v4/nps.68926899,nps.502a840b/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibnBzIiwiYSI6IkdfeS1OY1UifQ.K8Qn5ojTw4RV1GwBlsci-Q', {
+	var basemap = L.tileLayer('http://b.tiles.mapbox.com/v4/nps.68926899,nps.502a840b/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibnBzIiwiYSI6IkdfeS1OY1UifQ.K8Qn5ojTw4RV1GwBlsci-Q', {
 		maxZoom: 12,
 		attribution: 'Imagery from <a href="http://www.nps.gov/npmap/tools/park-tiles">National Park Service Park Tiles</a><a href="http://www.nps.gov</a>'
 	}).addTo(map);
@@ -42,6 +43,7 @@ function createMap() {
 	//getData function is called to get the data for the map element
 	getData(map);
 	getOverlayData(map);
+	
 };
 
 //Step 3. Make circle markers
@@ -55,18 +57,7 @@ function createPropSymbols(data, map, attributes) {
 		}
 	}).addTo(map);
 	updatePropSymbols(map, attributes[0]);
-
-	//create max rainfall rings
-	maxRing = L.geoJson(data, {
-		//create the circle marker
-		pointToLayer: function(feature, latlng){
-			return L.circleMarker(latlng, {
-				fillOpacity: 0,
-				fillColor: "#27AAC9"
-			}).addTo(map);
-		}
-	});
-};
+ };
 
 //function to convert markers to circle markers
 function pointToLayer (feature, latlng, attributes) {
@@ -185,6 +176,7 @@ function updatePropSymbols(map, attribute) {
 				},
 				mouseout: function(){
 					this.closePopup;
+					//console.log(this.closePopup);
 				},
 				click: function(){
 					$("#panelText").html(panelContent);
@@ -255,33 +247,17 @@ function createSequenceControls(map, attributes){
 	});	
 };
 
-
-//fifth operator-overlay 
-// function rainfallOverlay(overlay) {
-// 	var overlayData = 
-
-// 	var maxRainfall = {
-// 		"Maximum Rainfall": 
-// 	};
-
-// 	L.control.layers(null, null).addTo(map);
+// function createOverlaySymbols(data, map, attributes) {
+// 	//geoJSON layer with leaflet is created and added to the map
+// 	L.geoJson(data, {
+// 		//pointToLayer is used to change the marker features to circle markers, 
+// 		//styled with geojsonMarkerOptions
+// 		pointToLayer: function(feature, latlng){
+// 			return pointToLayer(feature, latlng, attributes);
+// 		}
+// 	}).addTo(map);
+// 	updatePropSymbols(map, attributes[0]);
 // };
-
-function createOverlaySymbols(data, map, attributes) {
-	//geoJSON layer with leaflet is created and added to the map
-	L.geoJson(data, {
-		//pointToLayer is used to change the marker features to circle markers, 
-		//styled with geojsonMarkerOptions
-		pointToLayer: function(feature, latlng){
-			return pointToLayer(feature, latlng, attributes);
-		}
-	}).addTo(map);
-	updatePropSymbols(map, attributes[0]);
-};
-
-
-
-
 
 //C. Create an array of time data to keep track of the order
 function processData(data) {
@@ -293,9 +269,8 @@ function processData(data) {
 
 	//push each attribute name into attributes array
 	for (var attribute in properties) {
-		//only talke attributes with rainfall values
+		//only take attributes with rainfall values
 		//console.log(attribute);
-		//wat
 		if (attribute.indexOf('to') > -1) {
 			attributes.push(attribute);
 		};
@@ -306,6 +281,20 @@ function processData(data) {
 
 	return attributes;
 };
+
+// function processOverlayData(response) {
+// 	var attributes = []
+
+// 	var properties = response.features[0].properties;
+
+// 	for (var attribute in properties) {
+// 		if (attribute.indexOf('maxRainfall')) {
+
+// 		};
+// 	};
+
+// 	return attributes;
+// }
 
 //Step 2. Add data
 //creating a function to load in data from MegaCities.geojson using jquery ajax method
@@ -323,19 +312,84 @@ function getData(map) {
 	});
 };
 
+//Implementin the 5th operator
+//Function to add the maximum rainfall overlay data
 function getOverlayData(map) {
 	$.ajax("data/overlayData.geojson", {
 		dataType: "json",
 		success: function (response) {
-			//create an attributes array
-			var operator = processData(response);
+			//marker style options are set to a variable
+			var geojsonMarkerOptions = {
+				radius: 10,
+				fillOpacity: 0,
+				color: "#000",
+				weight: 2,
+				opacity: 0.5,
+			};
+			//geoJSON layer with leaflet is created to add data to the map
 
-			//call function that use the data
-			//rainfallOverlay(overlay);
-		}		
+			var overlayLayer = L.geoJson(response, {
+				//pointToLayer is used to change the marker features to circle markers, 
+				//styled with geojsonMarkerOptions
+				pointToLayer: function (feature, latlng, attributes) {
+					// var attributes = processOverlayData(response);
+
+					// var attribute = attributes[2];
+					// console.log(attribute);
+					// var attValue = Number(feature.properties[attribute]);
+
+					// geojsonMarkerOptions.radius = calcPropSymbolRadius(attValue);
+
+					return L.circleMarker (latlng, geojsonMarkerOptions);
+
+				}
+
+				//onEachFeature function is called to bind the data to the popup
+				//onEachFeature: onEachFeature
+			//}).addTo(map);
+			//createOverlayRings(map, response);
+	});
+
+			var overlayRings = {
+			"Maximum Rainfall": overlayLayer
+			};
+
+			L.control.layers(null, overlayRings).addTo(map);
+		}
 	});
 };
 
+//function to create the overlay rings
+function createPropRings(map, response) {
+	//var ringGroup = []
+	var newRadius;
+	var mapLayer = map.eachLayer(function(layer) { 
+		//making sure there are no undefined values
+		if (layer.feature && (layer.feature.properties)) {
+			//console.log(layer.feature.properties.maxRainfall);
+			//access feature properties;
+			var props = layer.feature.properties.maxRainfall;
+			//console.log(props);
+
+			//update each feature's radius based on new attribute values
+			var radius = calcPropSymbolRadius(props);
+
+			layer.setRadius(radius);
+			newRadius = radius;
+			//ringGroup.push(newRadius);
+			
+			//var ringGroup = L.layerGroup([radius]);
+		};
+		return newRadius;
+	});		
+
+};
+
+//module 6 notes:
+//attribute and temporal legend (size and time period)
+//read lesson 1, don't implement any of it!
+//refactoring-reorganizing the code, making it more efficient-don't have to do it!
+//include data sources on web page!
 
 //when the DOM is ready, createMap is called 
 $(document).ready(createMap);
