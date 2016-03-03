@@ -1,36 +1,11 @@
 //Kristen Vincent's Leaflet Hurricane Katrina map
 
-
-//GOAL: Proportional symbol map for an attribute of the data
-//STEPS:
-//1. Create the Leaflet map
-//2. Import GeoJSON
-//3. Add circle markers for weather stations
-//4. Pick attribute to visualize (rainfall every 3 hours)
-//5. Determine the value for the selected feature
-//6. Give each feature's circle marker a radius based on the chosen attribute value
-
-//GOAL: Allow user to sequence through the whole day to see rainfall trends
-//STEPS:
-//A. Create slider widget
-//B. Create skip buttons
-//C. Create an array of time data to keep track of the order
-//D. Assign attribute based on index
-//E. Listen for user input through affordances  
-//F. Forward step incriment index, reverse decrement
-//G. Wrap end around
-//H. Update slider position based on index position
-//I. Reassign values based on inidex
-//J. Resize prop symbols accordingly
-
-//Step 1. Create the Leaflet map
-//defining a function to create the map
-
+//function to create the map
 function createMap() {
 //creating a variable called map that initializes our map, with zoom level and map center set
 	var map = L.map('map', {
-		center: [30, -88],
-		zoom: 5,
+		center: [31, -89],
+		zoom: 6,
 		minZoom: 4
 	});
 	
@@ -46,7 +21,7 @@ function createMap() {
 	
 };
 
-//Step 3. Make circle markers
+//Make circle markers
 function createPropSymbols(data, map, attributes) {
 	//geoJSON layer with leaflet is created and added to the map
 	L.geoJson(data, {
@@ -61,11 +36,9 @@ function createPropSymbols(data, map, attributes) {
 
 //function to convert markers to circle markers
 function pointToLayer (feature, latlng, attributes) {
-	//D. Assign attribute based on index
-	//Step 4. Choose attribute to visualize
+	//Assign attribute based on index
+	//Choose attribute to visualize
 	var attribute = attributes[0];
-	//check
-	//console.log(attribute);
 	//marker style options are set to a variable
 	var geojsonMarkerOptions = {
 		radius: 8,
@@ -75,44 +48,14 @@ function pointToLayer (feature, latlng, attributes) {
 		opacity: 1,
 		fillOpacity: 0.8
 	};
-	//Step 5. For each feature, determine its value for the selected attribute
+	//For each feature, determine its value for the selected attribute
 	var attValue = Number(feature.properties[attribute]);
 
-	//Step 6. Give circle marker a radius based on attribute value
+	//Give circle marker a radius based on attribute value
 	geojsonMarkerOptions.radius = calcPropSymbolRadius(attValue);
 
 	//creating the circle marker layer
 	var layer = L.circleMarker(latlng, geojsonMarkerOptions);
-
-	// //build popup content string
-	// var panelContent = "<p><b>Weather Station: </b>" + feature.properties.stationName + "</p>";
-	
-	// //formatting the panel information
-	// var timeStamp = attribute;
-	
-	// panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + feature.properties[attribute] + " inches</p>";
-
-	// //popup content is now weather station name
-	// var popupContent = feature.properties.stationName;
-
-	// //bind the popup to the marker
-	// layer.bindPopup(popupContent, {
-	// 	offset: new L.Point(0, -geojsonMarkerOptions.radius),
-	// 	closeButton: false
-	// });
-
-	//add event listeners to add content to an information panel
-	// layer.on({
-	// 	mouseover: function(){
-	// 		this.openPopup();
-	// 	},
-	// 	mouseout: function(){
-	// 		this.closePopup();
-	// 	},
-	// 	click: function(){
-	// 		$("#panelText").html(panelContent);
-	// 	}
-	// });
 
 	//return the marker to the L.geoJson pointToLayer option
 	return layer;
@@ -129,7 +72,7 @@ function calcPropSymbolRadius(attValue) {
 	return radius;
 };
 
-//J. Resize prop symbols accordingly
+//Resize prop symbols accordingly
 function updatePropSymbols(map, attribute) {
 	map.eachLayer(function(layer) {
 		//Since there are 0's in the data, they may be considered undefined,
@@ -138,8 +81,6 @@ function updatePropSymbols(map, attribute) {
 			//console.log(layer.feature);
 			//access feature properties;
 			var props = layer.feature.properties;
-
-
 			//update each feature's radius based on new attribute values
 			var radius = calcPropSymbolRadius(props[attribute]);
 			layer.setRadius(radius);
@@ -156,7 +97,6 @@ function updatePropSymbols(map, attribute) {
 			
 			panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " inches</p>";
 			//console.log(panelContent);
-	
 
 			//replace the layer popup
 			layer.bindPopup(popupContent, {
@@ -176,21 +116,20 @@ function updatePropSymbols(map, attribute) {
 				},
 				mouseout: function(){
 					this.closePopup;
-					//console.log(this.closePopup);
+					
 				},
 				click: function(){
 					$("#panelText").html(panelContent);
 				}
 			});
 			return layer;
-
 		};
 	});
 };
 
 
 //Sequencing Controls
-//A. Create slider widget
+//Create slider widget
 function createSequenceControls(map, attributes){
 	//create range inpute element (slider)
 	$('#panelSequence').append('<input class = "range-slider" type = "range">');
@@ -234,32 +173,17 @@ function createSequenceControls(map, attributes){
 
 	});
 
-	//E. Listen for user input through affordances (slider)
+	//Listen for user input through affordances (slider)
 	$('.range-slider').on('input', function() {
 		//F. get new index value
 		var index = $(this).val();
-		//test
-		//console.log(index);
-
-		//I. Reassign values based on inidex
+		//Reassign values based on inidex
 		updatePropSymbols(map, attributes[index]);
 
 	});	
 };
 
-// function createOverlaySymbols(data, map, attributes) {
-// 	//geoJSON layer with leaflet is created and added to the map
-// 	L.geoJson(data, {
-// 		//pointToLayer is used to change the marker features to circle markers, 
-// 		//styled with geojsonMarkerOptions
-// 		pointToLayer: function(feature, latlng){
-// 			return pointToLayer(feature, latlng, attributes);
-// 		}
-// 	}).addTo(map);
-// 	updatePropSymbols(map, attributes[0]);
-// };
-
-//C. Create an array of time data to keep track of the order
+//Create an array of time data to keep track of the order
 function processData(data) {
 	//empty array to hold attributes
 	var attributes = []
@@ -276,27 +200,11 @@ function processData(data) {
 		};
 	};
 
-	//check result
-	//console.log(attributes);
-
 	return attributes;
 };
 
-// function processOverlayData(response) {
-// 	var attributes = []
 
-// 	var properties = response.features[0].properties;
-
-// 	for (var attribute in properties) {
-// 		if (attribute.indexOf('maxRainfall')) {
-
-// 		};
-// 	};
-
-// 	return attributes;
-// }
-
-//Step 2. Add data
+//Add data
 //creating a function to load in data from MegaCities.geojson using jquery ajax method
 function getData(map) {
 	$.ajax("data/575Lab1Data.geojson", {
@@ -312,78 +220,58 @@ function getData(map) {
 	});
 };
 
-//Implementin the 5th operator
+//5th interaction operator
 //Function to add the maximum rainfall overlay data
 function getOverlayData(map) {
 	$.ajax("data/overlayData.geojson", {
 		dataType: "json",
 		success: function (response) {
+
 			//marker style options are set to a variable
 			var geojsonMarkerOptions = {
 				radius: 10,
 				fillOpacity: 0,
 				color: "#000",
 				weight: 2,
-				opacity: 0.5,
+				opacity: 0.4,
 			};
 			//geoJSON layer with leaflet is created to add data to the map
 
 			var overlayLayer = L.geoJson(response, {
+			
+
 				//pointToLayer is used to change the marker features to circle markers, 
 				//styled with geojsonMarkerOptions
-				pointToLayer: function (feature, latlng, attributes) {
-					// var attributes = processOverlayData(response);
+				pointToLayer: function (feature, latlng) {
 
-					// var attribute = attributes[2];
-					// console.log(attribute);
-					// var attValue = Number(feature.properties[attribute]);
-
-					// geojsonMarkerOptions.radius = calcPropSymbolRadius(attValue);
-
+					
 					return L.circleMarker (latlng, geojsonMarkerOptions);
-
 				}
+			});
+			
+			overlayLayer.eachLayer(function(layer){
 
-				//onEachFeature function is called to bind the data to the popup
-				//onEachFeature: onEachFeature
-			//}).addTo(map);
-			//createOverlayRings(map, response);
-	});
+			var props = layer.feature.properties.maxRainfall;
+			//console.log(props);
+
+			var radius = calcPropSymbolRadius(props);
+
+			layer.setRadius(radius);
+			});
+		
 
 			var overlayRings = {
 			"Maximum Rainfall": overlayLayer
 			};
 
+
 			L.control.layers(null, overlayRings).addTo(map);
+			
 		}
 	});
+	//updateRings(map);
 };
 
-//function to create the overlay rings
-function createPropRings(map, response) {
-	//var ringGroup = []
-	var newRadius;
-	var mapLayer = map.eachLayer(function(layer) { 
-		//making sure there are no undefined values
-		if (layer.feature && (layer.feature.properties)) {
-			//console.log(layer.feature.properties.maxRainfall);
-			//access feature properties;
-			var props = layer.feature.properties.maxRainfall;
-			//console.log(props);
-
-			//update each feature's radius based on new attribute values
-			var radius = calcPropSymbolRadius(props);
-
-			layer.setRadius(radius);
-			newRadius = radius;
-			//ringGroup.push(newRadius);
-			
-			//var ringGroup = L.layerGroup([radius]);
-		};
-		return newRadius;
-	});		
-
-};
 
 //module 6 notes:
 //attribute and temporal legend (size and time period)
