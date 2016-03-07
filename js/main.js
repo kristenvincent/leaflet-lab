@@ -43,10 +43,10 @@ function pointToLayer (feature, latlng, attributes) {
 	var geojsonMarkerOptions = {
 		radius: 8,
 		fillColor: "#27AAC9",
-		color: "#000",
+		color: "#165056",
 		weight: 1,
 		opacity: 1,
-		fillOpacity: 0.8
+		fillOpacity: 0.75
 	};
 	//For each feature, determine its value for the selected attribute
 	var attValue = Number(feature.properties[attribute]);
@@ -86,17 +86,17 @@ function updatePropSymbols(map, attribute) {
 			layer.setRadius(radius);
 
 			//add Weather Station name to popup content string
-			var popupContent = "<p><b>Weather Station: </b>" + props.stationName + "</p>";
+			var popupContent = "<span class = 'popupStyle'><p><b>Weather Station: </b>" + props.stationName + "</p></span>";
 			var timeStamp = attribute;
 
 			//build popup content string
-			var panelContent = "<p><b>Weather Station: </b><span class = 'weatherStation'>" + props.stationName + "</span></p>";
+			var panelContent = "<p><b>Weather Station: </b><span class = 'weatherStation'>" + props.stationName + "</span></p><div>";
 			//console.log(props.stationName);
 			
 			//add formatted attribute to panel content string
 			
-			panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " inches</p>";
-			//console.log(panelContent);
+			panelContent += "<p><b>Rainfall from  " + timeStamp + ": </b>" + props[attribute] + " Inches</p>";
+			
 
 			//replace the layer popup
 			layer.bindPopup(popupContent, {
@@ -115,7 +115,8 @@ function updatePropSymbols(map, attribute) {
 					this.openPopup();
 				},
 				mouseout: function(){
-					this.closePopup;
+					this.closePopup();
+					
 				},
 				click: function(){
 					$("#panelText").html(panelContent);
@@ -290,7 +291,7 @@ function getOverlayData(map) {
 		
 
 			var overlayRings = {
-			"Maximum Rainfall": overlayLayer
+			"<span class = 'overlayText'>Maximum Rainfall in a 3 Hour Period</span>": overlayLayer
 			};
 
 
@@ -315,7 +316,7 @@ function createLegend(map, attributes){
 			$(container).append('<div id = "temporal-legend">');
 
 			//start attribute legend svg string
-			var svg = '<svg id = "attribute-legend" width = "160px" height = "100px">';
+			var svg = '<svg id = "attribute-legend" width = "150px" height = "90px">';
 
 			//create an array of circle names for loop
 			var circles = {
@@ -327,10 +328,11 @@ function createLegend(map, attributes){
 			//loop to add each circle and text to svg string
 			for (var circle in circles){
 				//manual circle string
-				svg +='<circle class = "legend-circle" id = "' + circle + '" fill = "#27AAC9" fill-opacity = "0.8" stroke = "#000000" cx = "50"/>';
+				svg +='<circle class = "legend-circle" id = "' + circle + '" fill = "#27AAC9" fill-opacity = "0.75" stroke = "#165056" cx = "50"/>';
 
 				//text string
 				svg += '<text id = "' + circle + '-text" x="95" y="' + circles[circle] + '"></text>';
+				console.log(circles[circle]);
 			};
 
 			//close svg string
@@ -367,7 +369,7 @@ function updateLegend(map, attribute) {
 
 		//assign the cy and r attributes
 		$('#'+key).attr({
-			cy: 80-radius,
+			cy: 74.8-radius,
 			r: radius
 		});
 
